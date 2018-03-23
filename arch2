@@ -1,0 +1,123 @@
+#!/bin/bash
+
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+	Main(){
+		Init
+		Apps
+	}
+
+	Init(){
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//-- Networking --------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		echo "MasterEvolution" >> /etc/hostname
+		sudo pacman -S --noconfirm networkmanager
+		systemctl enable NetworkManager
+		systemctl start NetworkManager
+		./firewall-start
+		pacman -Syu --noconfirm
+		pacman -Sy archlinux-keyring
+
+		#printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		#printf " ${GREEN}//-- Plasma Desktop ----------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		#pacman -S --noconfirm plasma-meta
+		#printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//-- System Config -----------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		sed -i "/#pt_BR.UTF-8 UTF-8/c\pt_BR.UTF-8 UTF-8" /etc/locale.gen
+		locale-gen
+		echo "LANG=pt_BR.UTF-8" >> /etc/locale.conf
+		rm /etc/localtime
+		ln -s /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+		echo "KEYMAP=br-abnt2" >> /etc/vconsole.conf
+		echo "FONT=LatArCyrHeb-14" >> /etc/vconsole.conf
+		echo "FONT_MAP=" >> /etc/vconsole.conf
+		hwclock --systohc --utc
+		useradd -m -g users -G wheel,storage,power -s /bin/bash crash
+		sed -i "/# %wheel ALL=(ALL) ALL/c\%wheel ALL=(ALL) ALL" /etc/sudoers
+
+		sed -i "/MODULES=()/c\MODULES=(ext4)" /etc/mkinitcpio.conf
+		sed -i "/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)/c\HOOKS=(base udev autodetect modconf block filesystems encrypt lvm2 keyboard fsck)" /etc/mkinitcpio.conf
+		mkinitcpio -p linux
+
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//-- NVidia Drivers ----------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		pacman -Su --noconfirm nvidia-340xx nvidia-340xx-libgl lib32-nvidia-utils
+		pacman -Su --noconfirm xterm xorg-server xorg-xinit sudo terminator gedit firefox ntfs-3g gnome-disk-utility gparted
+		#pacman -Su --noconfirm plasma-meta 
+		#echo "exec startkde" >> /root/.xinitrc
+		#echo "exec startkde" >> /home/crash/.xinitrc
+
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//-- Grub --------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		pacman -S --noconfirm grub
+		grub-install --target=i386-pc --recheck /dev/sda
+		sed -i "/GRUB_CMDLINE_LINUX=""/c\GRUB_CMDLINE_LINUX=\"cryptdevice=/dev/sda3:MastersUniverse:allow-discards\"" /etc/default/grub
+		echo "GRUB_GFXMODE=1600x900" >> /etc/default/grub
+		echo "GRUB_THEME=\"/boot/grub/themes/Vimix/theme.txt\"" >> /etc/default/grub
+		grub-mkconfig -o /boot/grub/grub.cfg
+	}
+
+	Apps(){
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//-- Extra Applications ------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		pacman -Su --noconfirm flashplugin tar unzip vlc virtualbox inkscape bleachbit transmission-gtk git gnome-tweak-tool linux-headers fuse gtkmm dolphin
+		pacman -Su --noconfirm terminator gedit firefox screenfetch git cmatrix cowsay lolcat figlet pavucontrol
+		pacman -Su --noconfirm okular zenity lollypop yaourt wget sddm gimp inkscape gnome-system-monitor zsh python2-pip curl openssl blender 
+		pacman -Su --noconfirm a52dec faac faad2 flac jasper lame libdca libdv libmad libmpeg2 libtheora libvorbis libxv wavpack x264 xvidcore
+		pacman -Su --noconfirm wine winetricks lib32-libldap smbclient cifs-utils libwbclient lib32-libldap mpg123
+		pacman -Su --noconfirm lib32-gst-plugins-good lib32-gst-plugins-base gst-plugins-good gst-plugins-base gst-plugins-bad gst-plugins-ugly
+
+		
+
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//-- PlugIns -----------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		git clone https://github.com/cnc-club/gcodetools.git && cp gcodetools/*  /usr/share/inkscape/extensions/ -r
+		pip2.7 install numpy
+		pip2.7 install lxml
+		pip2.7 install nc
+		
+		systemctl enable sddm
+
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//-- Bash Colors -------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+
+		#echo "screenfetch" >> /root/.bashrc
+		#echo "exec startkde" >> /root/.initrc
+		#echo "exec startkde" >> /home/crash/.initrc
+		echo "figlet -f  big MastersUniverse | lolcat" >> /root/.bashrc
+		echo "screenfetch" >> /home/crash/.bashrc
+		echo "figlet -f  big MastersUniverse | lolcat" >> /home/crash/.bashrc
+
+		systemctl enable firewall.service
+		echo "systemctl start firewall" >> .bashrc
+		echo "sed -i \"/systemctl start firewall/c\ \" .bashrc "  >> .bashrc
+
+		echo "alias cleansys=\"bleachbit --list | grep -E \"[a-z]+\.[a-z]+\" | grep -v system.free_disk_space | xargs bleachbit --clean\"" >> ~/.bashrc
+		echo "alias x=\"cmatrix -s -b\"" >> ~/.bashrc
+        	echo "alias backup=\"tar -czvf /run/media/crash/NEWHD/arch/crash-date '+%b-%d-%Y-%H-%M-%S'.tar.gz /home/crash\"" >> ~/.bashrc
+   	    	sed -i -e 's/crash-date/crash-`date/g' ~/.bashrc
+        	sed -i -e 's/.tar.gz/`.tar.gz/g' ~/.bashrc
+
+		#pacman -S - < pkglist.txt # Install Packages TXT File
+		echo "alias arch-installed=\"pacman -Qqen > pkglist.txt\"" /home/crash/.bashrc
+        	echo "alias cleansys=\"bleachbit --list | grep -E \"[a-z]+\.[a-z]+\" | grep -v system.free_disk_space | xargs bleachbit --clean\"" >> /home/crash/.bashrc
+        	echo "alias backroot=\"tar -czvf /media/root/NEWHD/Debian/root-date '+%b-%d-%Y-%H-%M-%S'.tar.gz /root\"" >> /home/crash/.bashrc
+        	sed -i -e 's/root-date/root-`date/g' /home/crash/.bashrc
+        	sed -i -e 's/.tar.gz/`.tar.gz/g' /home/crash/.bashrc
+
+		#echo "curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh" >> /home/crash/.bashrc
+		#&& sh -c \"$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)
+		#sed -i \"/ZSH_THEME=\"robbyrussell\"/c\ZSH_THEME=\"xiong-chiamiov\"" /home/crash/.zshrc
+	}
+
+	Main

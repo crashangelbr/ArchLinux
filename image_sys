@@ -1,0 +1,23 @@
+#!/bin/bash
+
+    LVM_NAME="MastersUniverse"
+    LVM_NAME_VOLUME="Evolution"
+
+    hostname MasterEvolution
+    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+    systemctl start dhcpcd
+    ./firewall-start
+
+    loadkeys br-abnt2
+    timedatectl set-ntp true
+
+    cryptsetup luksOpen /dev/sda3 $LVM_NAME
+
+    mkdir /Workspace
+    mount /dev/sda4 /Workspace
+    mount /dev/$LVM_NAME_VOLUME/root /mnt
+    mkdir /mnt/boot
+    mount /dev/sda2 /mnt/boot
+
+   #tar -czvf /Workspace/SystemBackups/SYS.tar.gz /mnt/

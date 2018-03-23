@@ -1,0 +1,31 @@
+]#!/bin/bash
+
+	yaourt -Syu
+
+	yaourt -S --noconfirm timeshift
+	yaourt -S --noconfirm google-chrome
+	yaourt -S --noconfirm xnee
+	yaourt -S --noconfirm pamac-aur
+	yaourt -S --noconfirm hollywood
+
+	gpg --recv-keys 5CC908FDB71E12C2
+	yaourt -S --noconfirm gitkraken
+
+
+	# Visual Studio Code /.NET Core SDK
+	yaourt -S --noconfirm visual-studio-code-bin
+	yaourt -S --noconfirm dotnet-sdk
+
+	# CNC Apps
+	#yaourt -S --noconfirm bcnc
+
+	#yaourt -S --noconfirm pcb2gcode-git
+	#yaourt -S --noconfirm flatcam-git
+	#yaourt -S --noconfirm heekscad-git
+	#yaourt -S --noconfirm heekscnc-git
+	#yaourt -S --noconfirm linuxcnc-sim
+	#yaourt -S --noconfirm opencamlib-git
+	#yaourt -S --noconfirm stl2ngc-git
+	#yaourt -S --noconfirm pycam
+	#yaourt -S --noconfirm jdk7
+	

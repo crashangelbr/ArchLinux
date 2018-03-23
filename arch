@@ -1,0 +1,145 @@
+#!/bin/bash
+
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+CREATE_PARTITIONS=true
+LVM_NAME="MastersUniverse"
+LVM_NAME_VOLUME="MasterEvolution"
+LVM_WORK="Workspace"
+LVM_WORK_VOLUME="CrashAngelArts"
+
+  Main()
+  {
+    Init
+    InstallBase
+    System
+  }
+
+  Init()
+  {
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//-- Networking --------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    hostname MasterEvolution
+    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+    systemctl start dhcpcd
+    ./firewall-start
+
+    Partition
+
+    loadkeys br-abnt2
+    timedatectl set-ntp true
+    cp mirrorlist /etc/pacman.d/
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//-- Install Base System -----------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    cp pkg/* /var/cache/pacman/pkg/ -r
+    pacman -Syu --noconfirm
+    pacman -Sy  --noconfirm archlinux-keyring
+  }
+
+  InstallBase()
+  {
+    pacstrap /mnt base base-devel
+    genfstab /mnt >> /mnt/etc/fstab
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//-- Restore Pakages ---------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    cp pkg_root/* /mnt/var/cache/pacman/pkg/
+  }
+
+
+  Partition()
+  {
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//-- Partitions --------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+
+    if $CREATE_PARTITIONS;
+    then
+      dd if=/dev/zero of=/dev/sda bs=446 count=1
+      dd if=/dev/zero of=/dev/sda bs=512 count=1
+      sgdisk -Z /dev/sda
+      sgdisk -n 1:2048:4000 -c 1:"BIOS Boot Partition" -t 1:ef02 /dev/sda
+      sgdisk -n 2:4096:1028095 -c 2:"EFI System Partition" -t 2:ef00 /dev/sda
+      sgdisk -n 3:1028096:189771775 -c 3:"Linux LVM" -t 3:8e00 /dev/sda
+      sgdisk -n 4:189771776:488397134 -c 4:"Linux Filesystem" -t 4:8300 /dev/sda
+      sgdisk -p /dev/sda
+
+      cryptsetup luksFormat /dev/sda3
+      #cryptsetup luksFormat /dev/sda4
+    fi
+
+      cryptsetup luksOpen /dev/sda3 $LVM_NAME
+      #cryptsetup luksOpen /dev/sda4 $LVM_WORK
+
+    if $CREATE_PARTITIONS;
+    then
+      pvcreate /dev/mapper/$LVM_NAME
+      vgcreate $LVM_NAME_VOLUME /dev/mapper/$LVM_NAME
+      lvcreate -n swap $LVM_NAME_VOLUME -L 16G
+      lvcreate -n root $LVM_NAME_VOLUME -l 100%FREE
+
+      #pvcreate /dev/mapper/$LVM_WORK
+      #vgcreate $LVM_WORK_VOLUME /dev/mapper/$LVM_WORK
+      #lvcreate -n Work $LVM_WORK_VOLUME -l 100%FREE
+    fi
+
+    mkfs.vfat -n BOOT /dev/sda2
+    mkfs.ext4 -L root /dev/$LVM_NAME_VOLUME/root
+    #mkfs.ext4 -L Work /dev/$LVM_WORK_VOLUME/Work
+    mkfs.ext4 -L 'Workspace' /dev/sda4
+    #mkfs.btrfs -O ^64Bit -L root /dev/$LVM_NAME_VOLUME/root
+
+    mkswap -L swap /dev/$LVM_NAME_VOLUME/swap
+    swapon /dev/$LVM_NAME_VOLUME/swap
+
+   #mkdir /mnt/Workspace
+
+    mount /dev/$LVM_NAME_VOLUME/root /mnt
+   #mount /dev/$LVM_WORK_VOLUME/Work /mnt/Workspace
+
+    mkdir /mnt/boot
+    mount /dev/sda2 /mnt/boot
+  }
+
+  System()
+  {
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//-- Chroot System -----------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+    printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
+
+    arch-chroot /mnt /bin/bash << EOF
+    mount /dev/sdb1 /mnt
+    cd /mnt
+
+    mkdir /mnt/etc/systemd && mkdir /mnt/etc/systemd/system
+    cp firewall-start /etc/
+    chmod +x /etc/firewall-start
+    cp firewall.service /etc/systemd/system/firewall.service
+    chmod 755 /etc/systemd/system/firewall.service
+
+    cp arch2 /root
+    cp pacman.conf /etc
+
+    mkdir /boot/grub
+    mkdir /boot/grub/themes
+    cp grub-themes/* /boot/grub/themes -r
+    cp background.png /boot/grub/themes/Vimix
+
+    pacman -Syu
+    ./arch2
+
+    cp figlet_fonts/* /usr/share/figlet/fonts/
+
+    #tar -xzvf crash.tar.gz -C /
+
+    umount /dev/sdb1
+EOF
+    umount /dev/sdb1
+    reboot
+  }
+
+  Main
