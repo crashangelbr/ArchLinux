@@ -1,0 +1,16 @@
+#!/bin/bash
+
+
+cp firewall /etc/firewall-start
+/etc/./firewall-start
+
+systemctl start tor
+archtorify  -t -c -r
+
+cp firewall-tor /etc/firewall-start
+/etc/./firewall-start
+
+archtorify  -r
+
+
+
