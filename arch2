@@ -20,11 +20,6 @@ NC='\033[0m' # No Color
 		pacman -Syu --noconfirm
 		pacman -Sy archlinux-keyring
 
-		#printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
-		#printf " ${GREEN}//-- Plasma Desktop ----------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
-		#pacman -S --noconfirm plasma-meta
-		#printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
-
 		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 		printf " ${GREEN}//-- System Config -----------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
@@ -47,11 +42,12 @@ NC='\033[0m' # No Color
 		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 		printf " ${GREEN}//-- NVidia Drivers ----------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
-		pacman -Su --noconfirm nvidia-340xx nvidia-340xx-libgl lib32-nvidia-utils
+		pacman -Su --noconfirm nvidia-390xx nvidia-390xx-libgl lib32-nvidia-utils
 		pacman -Su --noconfirm xterm xorg-server xorg-xinit sudo terminator gedit firefox ntfs-3g gnome-disk-utility gparted
-		#pacman -Su --noconfirm plasma-meta 
-		#echo "exec startkde" >> /root/.xinitrc
-		#echo "exec startkde" >> /home/crash/.xinitrc
+		pacman -Su --noconfirm deepin deepin-extra
+		echo "exec startdde" >> /root/.xinitrc
+		echo "exec startdde" >> /home/crash/.xinitrc
+        echo "greeter-session = lightdm-deepin-greeter" >> /etc/lightdm/lightdm.conf
 
 		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 		printf " ${GREEN}//-- Grub --------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
@@ -68,24 +64,12 @@ NC='\033[0m' # No Color
 		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 		printf " ${GREEN}//-- Extra Applications ------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
-		pacman -Su --noconfirm flashplugin tar unzip vlc virtualbox inkscape bleachbit transmission-gtk git gnome-tweak-tool linux-headers fuse gtkmm dolphin
-		pacman -Su --noconfirm terminator gedit firefox screenfetch git cmatrix cowsay lolcat figlet pavucontrol
-		pacman -Su --noconfirm okular zenity lollypop yaourt wget sddm gimp inkscape gnome-system-monitor zsh python2-pip curl openssl blender 
-		pacman -Su --noconfirm a52dec faac faad2 flac jasper lame libdca libdv libmad libmpeg2 libtheora libvorbis libxv wavpack x264 xvidcore
-		pacman -Su --noconfirm wine winetricks lib32-libldap smbclient cifs-utils libwbclient lib32-libldap mpg123
-		pacman -Su --noconfirm lib32-gst-plugins-good lib32-gst-plugins-base gst-plugins-good gst-plugins-base gst-plugins-bad gst-plugins-ugly
-
-		
-
-		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
-		printf " ${GREEN}//-- PlugIns -----------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
-		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
-		git clone https://github.com/cnc-club/gcodetools.git && cp gcodetools/*  /usr/share/inkscape/extensions/ -r
-		pip2.7 install numpy
-		pip2.7 install lxml
-		pip2.7 install nc
-		
-		systemctl enable sddm
+		#pacman -Su --noconfirm flashplugin tar unzip vlc virtualbox inkscape bleachbit transmission-gtk git gnome-tweak-tool linux-headers fuse gtkmm dolphin
+		#pacman -Su --noconfirm terminator gedit firefox screenfetch git cmatrix cowsay lolcat figlet pavucontrol
+		#pacman -Su --noconfirm okular zenity lollypop yaourt wget sddm gimp inkscape gnome-system-monitor zsh python2-pip curl openssl blender 
+		#pacman -Su --noconfirm a52dec faac faad2 flac jasper lame libdca libdv libmad libmpeg2 libtheora libvorbis libxv wavpack x264 xvidcore
+		#pacman -Su --noconfirm wine winetricks lib32-libldap smbclient cifs-utils libwbclient lib32-libldap mpg123
+		#pacman -Su --noconfirm lib32-gst-plugins-good lib32-gst-plugins-base gst-plugins-good gst-plugins-base gst-plugins-bad gst-plugins-ugly
 
 		printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 		printf " ${GREEN}//-- Bash Colors -------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
@@ -95,7 +79,6 @@ NC='\033[0m' # No Color
 		#echo "exec startkde" >> /root/.initrc
 		#echo "exec startkde" >> /home/crash/.initrc
 		echo "figlet -f  big MastersUniverse | lolcat" >> /root/.bashrc
-		echo "screenfetch" >> /home/crash/.bashrc
 		echo "figlet -f  big MastersUniverse | lolcat" >> /home/crash/.bashrc
 
 		systemctl enable firewall.service
@@ -118,6 +101,28 @@ NC='\033[0m' # No Color
 		#echo "curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh" >> /home/crash/.bashrc
 		#&& sh -c \"$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)
 		#sed -i \"/ZSH_THEME=\"robbyrussell\"/c\ZSH_THEME=\"xiong-chiamiov\"" /home/crash/.zshrc
+
+		pacman -Su --noconfirm  tor
+		systemctl enable tor
+		systemctl start tor
+
+		git clone https://github.com/brainfucksec/archtorify
+		cd archtorify/
+		sudo make install
+		echo "archtorify -t -c -r" >> /root/.bashrc
+		echo "archtorify -t -c -r" >> /home/crash/.bashrc
+
+		archtorify -t -c -r
+
+		#echo "-A INPUT -p udp --sport 123 --dport 123 -j ACCEPT" > /etc/firewall-start
+		#echo "-A OUTPUT -p udp --sport 123 --dport 123 -j ACCEPT" >> /etc/firewall-start
+		#echo "-A INPUT -p tcp -m tcp --sport 9050 -j ACCEPT" >> /etc/firewall-start
+		#echo "-A OUTPUT -p tcp -m tcp --dport 9050 -j ACCEPT" >> /etc/firewall-start
+		#echo "-A INPUT ! -s 127.0.0.1 -j DROP" >> /etc/firewall-start
+		#echo "-A OUTPUT ! -s 127.0.0.1 -j DROP" >> /etc/firewall-start
+
+		cp tor-firewall /etc/firewall-start
+		/etc/./firewall-start
 	}
 
 	Main

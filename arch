@@ -8,6 +8,7 @@ LVM_NAME="MastersUniverse"
 LVM_NAME_VOLUME="MasterEvolution"
 LVM_WORK="Workspace"
 LVM_WORK_VOLUME="CrashAngelArts"
+DEVICE="sdb1"
 
   Main()
   {
@@ -31,7 +32,7 @@ LVM_WORK_VOLUME="CrashAngelArts"
 
     loadkeys br-abnt2
     timedatectl set-ntp true
-    cp mirrorlist /etc/pacman.d/
+    #cp mirrorlist /etc/pacman.d/
     printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
     printf " ${GREEN}//-- Install Base System -----------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
     printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
@@ -64,8 +65,8 @@ LVM_WORK_VOLUME="CrashAngelArts"
       sgdisk -Z /dev/sda
       sgdisk -n 1:2048:4000 -c 1:"BIOS Boot Partition" -t 1:ef02 /dev/sda
       sgdisk -n 2:4096:1028095 -c 2:"EFI System Partition" -t 2:ef00 /dev/sda
-      sgdisk -n 3:1028096:189771775 -c 3:"Linux LVM" -t 3:8e00 /dev/sda
-      sgdisk -n 4:189771776:488397134 -c 4:"Linux Filesystem" -t 4:8300 /dev/sda
+      sgdisk -n 3:+100%FREE -c 3:"Linux LVM" -t 3:8e00 /dev/sda
+      #sgdisk -n 4:189771776:100% -c 4:"Linux Filesystem" -t 4:8300 /dev/sda
       sgdisk -p /dev/sda
 
       cryptsetup luksFormat /dev/sda3
@@ -112,7 +113,7 @@ LVM_WORK_VOLUME="CrashAngelArts"
     printf " ${GREEN}//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"${NC}
 
     arch-chroot /mnt /bin/bash << EOF
-    mount /dev/sdb1 /mnt
+    mount /dev/$DEVICE /mnt
     cd /mnt
 
     mkdir /mnt/etc/systemd && mkdir /mnt/etc/systemd/system
@@ -136,9 +137,9 @@ LVM_WORK_VOLUME="CrashAngelArts"
 
     #tar -xzvf crash.tar.gz -C /
 
-    umount /dev/sdb1
+    umount /dev/$DEVICE
 EOF
-    umount /dev/sdb1
+    umount /dev/$DEVICE
     reboot
   }
 
