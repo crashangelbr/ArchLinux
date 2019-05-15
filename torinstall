@@ -1,0 +1,20 @@
+#!/bin/bash
+
+		pacman -S --noconfirm git
+		git clone https://github.com/brainfucksec/archtorify
+		cd archtorify/
+		sudo make install
+		echo "archtorify -t -c -r" >> /root/.bashrc
+		echo "archtorify -t -c -r" >> /home/crash/.bashrc
+
+		archtorify -t -c -r
+
+		#echo "-A INPUT -p udp --sport 123 --dport 123 -j ACCEPT" > /etc/firewall-start
+		#echo "-A OUTPUT -p udp --sport 123 --dport 123 -j ACCEPT" >> /etc/firewall-start
+		#echo "-A INPUT -p tcp -m tcp --sport 9050 -j ACCEPT" >> /etc/firewall-start
+		#echo "-A OUTPUT -p tcp -m tcp --dport 9050 -j ACCEPT" >> /etc/firewall-start
+		#echo "-A INPUT ! -s 127.0.0.1 -j DROP" >> /etc/firewall-start
+		#echo "-A OUTPUT ! -s 127.0.0.1 -j DROP" >> /etc/firewall-start
+
+		cp tor-firewall /etc/firewall-start
+		/etc/./firewall-start

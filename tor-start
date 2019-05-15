@@ -1,16 +1,48 @@
 #!/bin/bash
 
+wipe() {
+    echo 1024 >/proc/sys/vm/min_free_kbytes
+    echo 3 >/proc/sys/vm/drop_caches
+    echo 1 >/proc/sys/vm/oom_kill_allocating_task
+    echo 1 >/proc/sys/vm/overcommit_memory
+    echo 0 >/proc/sys/vm/oom_dump_tasks
+    #semem -fllv
+}
 
-cp firewall /etc/firewall-start
+chngid() {
+    echo "changing tor identity"
+    stop_service tor &>"/dev/null"
+    sleep 1
+    start_service tor &>"/dev/null"
+    echo "tor identity changed"
+}
+
+chngmac() {
+    echo "changing mac addresses"
+    IFACES=$(ip -o link show | awk -F': ' '{print $2}')
+    for IFACE in $IFACES; do
+        if [ $IFACE != "lo" ]; then
+            ip link set $IFACE down &>"/dev/null"
+            macchanger -r $IFACE &>"/dev/null"
+            ip link set $IFACE up &>"/dev/null"
+        fi
+    done
+    echo "changed mac addresses"
+}
+
+
+cp /home/crash/tor/firewall /etc/firewall-start
 /etc/./firewall-start
 
 systemctl start tor
+
+wipe
+chngid
+chngmac
+
 archtorify  -t -c -r
 
-cp firewall-tor /etc/firewall-start
+cp /home/crash/tor/firewall-tor /etc/firewall-start
 /etc/./firewall-start
 
 archtorify  -r
-
-
-

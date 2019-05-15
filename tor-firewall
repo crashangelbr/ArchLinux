@@ -6,7 +6,6 @@ printf " ${GREEN}[ Start Firewall ]\n"${NC}
 hostname MasterEvolution
 
 LAN="enp4s0"
-#LAN="wlp2s0"
 HOSTNAME="MasterEvolution"
 
 iptables --flush
@@ -141,18 +140,27 @@ iptables -A OUTPUT -p tcp -m tcp ! --tcp-flags SYN,RST,ACK SYN -m state --state 
 # ESTABLISHED,RELATED (OUT)
 iptables -A OUTPUT  -m state --state ESTABLISHED,RELATED  -j ACCEPT
 
-iptables -A OUTPUT -p udp --sport 67 --dport 68 -j ACCEPT			# DHCP
-iptables -A OUTPUT -p udp -m udp  --dport 53  -m state --state NEW  -j ACCEPT	# DNS
-iptables -A OUTPUT -p tcp -m tcp  --dport 80  -m state --state NEW  -j ACCEPT	# HTTP
-iptables -A OUTPUT -p tcp -m tcp  --dport 443  -m state --state NEW  -j ACCEPT	# HTTPS
-iptables -A OUTPUT -p tcp -m tcp  --dport 9418  -m state --state NEW  -j ACCEPT # GIT
+
+# TOR SETTINGS
+iptables -A INPUT -p udp --sport 123 --dport 123 -j ACCEPT
+iptables -A OUTPUT -p udp --sport 123 --dport 123 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --sport 9050 -j ACCEPT
+iptables -A OUTPUT -p tcp -m tcp --dport 9050 -j ACCEPT
+iptables -A INPUT ! -s 127.0.0.1 -j DROP
+iptables -A OUTPUT ! -s 127.0.0.1 -j DROP
+
+#iptables -A OUTPUT -p udp --sport 67 --dport 68 -j ACCEPT			# DHCP
+#iptables -A OUTPUT -p udp -m udp  --dport 53  -m state --state NEW  -j ACCEPT	# DNS
+#iptables -A OUTPUT -p tcp -m tcp  --dport 80  -m state --state NEW  -j ACCEPT	# HTTP
+#iptables -A OUTPUT -p tcp -m tcp  --dport 443  -m state --state NEW  -j ACCEPT	# HTTPS
+#iptables -A OUTPUT -p tcp -m tcp  --dport 9418  -m state --state NEW  -j ACCEPT # GIT
 
 #iptables -A OUTPUT -p tcp -m tcp  --dport 21  -m state --state NEW  -j ACCEPT 	# FTP
-iptables -A OUTPUT -p tcp -m tcp  --dport 25  -m state --state NEW  -j ACCEPT 	# SMTP
-iptables -A OUTPUT -p tcp -m tcp  --dport 110  -m state --state NEW  -j ACCEPT # POP3
-iptables -A OUTPUT -p tcp -m tcp  --dport 143  -m state --state NEW  -j ACCEPT # IMAP
-iptables -A OUTPUT -p tcp -m tcp  --dport 465  -m state --state NEW  -j ACCEPT # SMTPS
-iptables -A OUTPUT -p tcp -m tcp  --dport 993  -m state --state NEW  -j ACCEPT # KMail
+#iptables -A OUTPUT -p tcp -m tcp  --dport 25  -m state --state NEW  -j ACCEPT 	# SMTP
+#iptables -A OUTPUT -p tcp -m tcp  --dport 110  -m state --state NEW  -j ACCEPT # POP3
+#iptables -A OUTPUT -p tcp -m tcp  --dport 143  -m state --state NEW  -j ACCEPT # IMAP
+#iptables -A OUTPUT -p tcp -m tcp  --dport 465  -m state --state NEW  -j ACCEPT # SMTPS
+#iptables -A OUTPUT -p tcp -m tcp  --dport 993  -m state --state NEW  -j ACCEPT # KMail
 #iptables -A OUTPUT -p udp -m udp  --dport 1194  -m state --state NEW  -j ACCEPT # OpenVPN
 #iptables -A OUTPUT -p tcp -m tcp  --dport 6881  -m state --state NEW  -j ACCEPT # KTorrent
 #iptables -A OUTPUT -p udp -m udp  --dport 6881  -m state --state NEW  -j ACCEPT # KTorrent
